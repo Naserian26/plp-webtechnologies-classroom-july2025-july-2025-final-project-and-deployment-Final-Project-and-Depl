@@ -1,22 +1,113 @@
-// Task Manager Class
-class TaskManager {
+// Movie data with image links - REPLACE THESE WITH YOUR OWN IMAGE URLs
+const movies = [
+    {
+        id: 1,
+        title: "Inception",
+        year: 2010,
+        rating: "PG-13",
+        duration: "2h 28m",
+        genre: "sci-fi",
+        description: "A thief who steals corporate secrets through the use of dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
+        poster: "https://cdn11.bigcommerce.com/s-yzgoj/images/stencil/1280x1280/products/2919271/5944675/MOVEB46211__19379.1679590452.jpg?c=2", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "YoHD9XEInc0"
+    },
+    {
+        id: 2,
+        title: "The Dark Knight",
+        year: 2008,
+        rating: "PG-13",
+        duration: "2h 32m",
+        genre: "action",
+        description: "When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.",
+        poster: "https://images.moviesanywhere.com/bd47f9b7d090170d79b3085804075d41/c6140695-a35f-46e2-adb7-45ed829fc0c0.jpg", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "EXeTwQWrcwY"
+    },
+    {
+        id: 3,
+        title: "Interstellar",
+        year: 2014,
+        rating: "PG-13",
+        duration: "2h 49m",
+        genre: "sci-fi",
+        description: "A team of explorers travel through a wormhole in space in an attempt to ensure humanity's survival.",
+        poster: "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "zSWdZVtXT7E"
+    },
+    {
+        id: 4,
+        title: "The Hangover",
+        year: 2009,
+        rating: "R",
+        duration: "1h 40m",
+        genre: "comedy",
+        description: "Three buddies wake up from a bachelor party in Las Vegas, with no memory of the previous night and the bachelor missing.",
+        poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTXQnLp2LD_Mia4zmthSg2hz1w_s7VTwBd9Q&s", // 
+
+    },
+    {
+        id: 5,
+        title: "Forrest Gump",
+        year: 1994,
+        rating: "PG-13",
+        duration: "2h 22m",
+        genre: "drama",
+        description: "The presidencies of Kennedy and Johnson, the events of Vietnam, Watergate and other historical events unfold through the perspective of an Alabama man with an IQ of 75.",
+        poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQl7SxSVQm2tAycmpxdsnccD760VSX-O-6ipA&s", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "bLvqoHBptjg"
+    },
+    {
+        id: 6,
+        title: "The Matrix",
+        year: 1999,
+        rating: "R",
+        duration: "2h 16m",
+        genre: "sci-fi",
+        description: "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controllers.",
+        poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHO69ZhSPdGkDqfSBEJ0zOUvPNLSkasPP6Yw&s", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "vKQi3bBA1y8"
+    },
+    {
+        id: 7,
+        title: "Pulp Fiction",
+        year: 1994,
+        rating: "R",
+        duration: "2h 34m",
+        genre: "drama",
+        description: "The lives of two mob hitmen, a boxer, a gangster and his wife, and a pair of diner bandits intertwine in four tales of violence and redemption.",
+        poster: "https://upload.wikimedia.org/wikipedia/en/3/3b/Pulp_Fiction_%281994%29_poster.jpg", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "s7EdQ4FqbhY"
+    },
+    {
+        id: 8,
+        title: "Superbad",
+        year: 2007,
+        rating: "R",
+        duration: "1h 53m",
+        genre: "comedy",
+        description: "Two co-dependent high school seniors are forced to deal with separation anxiety after their plan to stage a booze-soaked party goes awry.",
+        poster: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRP_yBexoyJF7NsOBq0TkuBc57RAsbAJT6mkA&s", // REPLACE WITH YOUR IMAGE URL
+        trailerId: "09N2a0d3xQs"
+    }
+];
+
+// Movie App Class
+class MovieApp {
     constructor() {
-        this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         this.currentFilter = 'all';
+        this.filteredMovies = [...movies];
         this.init();
     }
 
     init() {
+        this.renderMovies();
         this.setupEventListeners();
-        this.renderTasks();
-        this.updateStats();
     }
 
     setupEventListeners() {
-        // Form submission
-        document.getElementById('taskForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.addTask();
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', (e) => {
+            this.searchMovies(e.target.value);
         });
 
         // Filter buttons
@@ -26,290 +117,121 @@ class TaskManager {
             });
         });
 
-        // Clear completed
-        document.getElementById('clearCompleted').addEventListener('click', () => {
-            this.clearCompleted();
-        });
-
-        // Edit form
-        document.getElementById('editForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveEdit();
+        // Modal close
+        document.querySelector('.close-btn').addEventListener('click', () => {
+            this.closeModal();
         });
 
         // Close modal on outside click
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target.id === 'editModal') {
-                this.closeEditModal();
+        document.getElementById('movieModal').addEventListener('click', (e) => {
+            if (e.target.id === 'movieModal') {
+                this.closeModal();
+            }
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
             }
         });
     }
 
-    addTask() {
-        const input = document.getElementById('taskInput');
-        const priority = document.getElementById('prioritySelect').value;
-        const category = document.getElementById('categorySelect').value;
-        
-        if (input.value.trim() === '') return;
+    renderMovies() {
+        const moviesGrid = document.getElementById('moviesGrid');
+        moviesGrid.innerHTML = '';
 
-        const task = {
-            id: Date.now(),
-            text: input.value.trim(),
-            priority: priority,
-            category: category,
-            completed: false,
-            createdAt: new Date().toISOString()
-        };
-
-        this.tasks.unshift(task);
-        this.saveTasks();
-        this.renderTasks();
-        this.updateStats();
-        
-        // Reset form
-        input.value = '';
-        input.focus();
-
-        // Show success animation
-        this.showNotification('Task added successfully!');
+        this.filteredMovies.forEach(movie => {
+            const movieCard = document.createElement('div');
+            movieCard.className = 'movie-card';
+            movieCard.innerHTML = `
+                <div class="poster-wrapper">
+                    <img src="${movie.poster}" alt="${movie.title}" class="movie-poster" 
+                         onerror="this.src='https://picsum.photos/seed/fallback/300/450.jpg'">
+                    <div class="poster-overlay">
+                        <h3 class="poster-title">${movie.title}</h3>
+                        <p class="poster-year">${movie.year}</p>
+                    </div>
+                    <span class="poster-badge">${movie.rating}</span>
+                    <i class="fas fa-play play-icon"></i>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">${movie.title}</h3>
+                    <p class="movie-year">${movie.year} • ${movie.genre}</p>
+                </div>
+            `;
+            
+            movieCard.addEventListener('click', () => {
+                this.openModal(movie);
+            });
+            
+            moviesGrid.appendChild(movieCard);
+        });
     }
 
-    toggleTask(id) {
-        const task = this.tasks.find(t => t.id === id);
-        if (task) {
-            task.completed = !task.completed;
-            this.saveTasks();
-            this.renderTasks();
-            this.updateStats();
+    searchMovies(query) {
+        if (!query) {
+            this.filteredMovies = [...movies];
+        } else {
+            this.filteredMovies = movies.filter(movie => 
+                movie.title.toLowerCase().includes(query.toLowerCase()) ||
+                movie.genre.toLowerCase().includes(query.toLowerCase())
+            );
         }
+        this.renderMovies();
     }
 
-    deleteTask(id) {
-        this.tasks = this.tasks.filter(t => t.id !== id);
-        this.saveTasks();
-        this.renderTasks();
-        this.updateStats();
-        this.showNotification('Task deleted!');
-    }
-
-    editTask(id) {
-        const task = this.tasks.find(t => t.id === id);
-        if (task) {
-            document.getElementById('editTaskId').value = task.id;
-            document.getElementById('editTaskInput').value = task.text;
-            document.getElementById('editPrioritySelect').value = task.priority;
-            document.getElementById('editCategorySelect').value = task.category;
-            document.getElementById('editModal').style.display = 'block';
-        }
-    }
-
-    saveEdit() {
-        const id = parseInt(document.getElementById('editTaskId').value);
-        const text = document.getElementById('editTaskInput').value.trim();
-        const priority = document.getElementById('editPrioritySelect').value;
-        const category = document.getElementById('editCategorySelect').value;
-        
-        if (text === '') return;
-
-        const task = this.tasks.find(t => t.id === id);
-        if (task) {
-            task.text = text;
-            task.priority = priority;
-            task.category = category;
-            this.saveTasks();
-            this.renderTasks();
-            this.updateStats();
-            this.closeEditModal();
-            this.showNotification('Task updated successfully!');
-        }
-    }
-
-    closeEditModal() {
-        document.getElementById('editModal').style.display = 'none';
-    }
-
-    setFilter(filter) {
-        this.currentFilter = filter;
+    setFilter(genre) {
+        this.currentFilter = genre;
         
         // Update active button
         document.querySelectorAll('.filter-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+        document.querySelector(`[data-filter="${genre}"]`).classList.add('active');
         
-        this.renderTasks();
-    }
-
-    getFilteredTasks() {
-        switch (this.currentFilter) {
-            case 'active':
-                return this.tasks.filter(t => !t.completed);
-            case 'completed':
-                return this.tasks.filter(t => t.completed);
-            default:
-                return this.tasks;
-        }
-    }
-
-    clearCompleted() {
-        const completedCount = this.tasks.filter(t => t.completed).length;
-        if (completedCount === 0) return;
-        
-        if (confirm(`Are you sure you want to delete ${completedCount} completed task(s)?`)) {
-            this.tasks = this.tasks.filter(t => !t.completed);
-            this.saveTasks();
-            this.renderTasks();
-            this.updateStats();
-            this.showNotification('Completed tasks cleared!');
-        }
-    }
-
-    renderTasks() {
-        const tasksList = document.getElementById('tasksList');
-        const emptyState = document.getElementById('emptyState');
-        const filteredTasks = this.getFilteredTasks();
-
-        if (filteredTasks.length === 0) {
-            tasksList.innerHTML = '';
-            emptyState.style.display = 'block';
-            return;
-        }
-
-        emptyState.style.display = 'none';
-        
-        tasksList.innerHTML = filteredTasks.map(task => `
-            <div class="task-item ${task.completed ? 'completed' : ''}" data-id="${task.id}">
-                <input 
-                    type="checkbox" 
-                    class="task-checkbox" 
-                    ${task.completed ? 'checked' : ''}
-                    onchange="taskManager.toggleTask(${task.id})"
-                >
-                <div class="task-content">
-                    <div class="task-text">${this.escapeHtml(task.text)}</div>
-                    <div class="task-meta">
-                        <span class="priority-badge ${task.priority}">${task.priority}</span>
-                        <span class="category-badge">${task.category}</span>
-                        <span class="task-time">${this.formatTime(task.createdAt)}</span>
-                    </div>
-                </div>
-                <div class="task-actions">
-                    <button class="task-btn edit-btn" onclick="taskManager.editTask(${task.id})" title="Edit">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="task-btn delete-btn" onclick="taskManager.deleteTask(${task.id})" title="Delete">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    updateStats() {
-        const total = this.tasks.length;
-        const active = this.tasks.filter(t => !t.completed).length;
-        const completed = this.tasks.filter(t => t.completed).length;
-
-        document.getElementById('totalTasks').textContent = total;
-        document.getElementById('activeTasks').textContent = active;
-        document.getElementById('completedTasks').textContent = completed;
-    }
-
-    saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(this.tasks));
-    }
-
-    formatTime(dateString) {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diff = now - date;
-        
-        if (diff < 60000) return 'just now';
-        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
-        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
-        if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
-        
-        return date.toLocaleDateString();
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    showNotification(message) {
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.innerHTML = `
-            <i class="fas fa-check-circle"></i>
-            ${message}
-        `;
-        
-        // Add styles
-        notification.style.cssText = `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #4caf50;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 500;
-            z-index: 2000;
-            animation: slideInRight 0.3s ease;
-        `;
-        
-        // Add animation keyframes
-        if (!document.querySelector('#notificationStyles')) {
-            const style = document.createElement('style');
-            style.id = 'notificationStyles';
-            style.textContent = `
-                @keyframes slideInRight {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-                @keyframes slideOutRight {
-                    from {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
+        // Filter movies
+        if (genre === 'all') {
+            this.filteredMovies = [...movies];
+        } else {
+            this.filteredMovies = movies.filter(movie => movie.genre === genre);
         }
         
-        document.body.appendChild(notification);
+        this.renderMovies();
+    }
+
+    openModal(movie) {
+        const modal = document.getElementById('movieModal');
+        const trailerFrame = document.getElementById('trailerFrame');
         
-        // Remove after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                notification.remove();
-            }, 300);
-        }, 3000);
+        // Set movie details
+        document.getElementById('modalTitle').textContent = movie.title;
+        document.getElementById('modalYear').textContent = movie.year;
+        document.getElementById('modalRating').textContent = movie.rating;
+        document.getElementById('modalDuration').textContent = movie.duration;
+        document.getElementById('modalDescription').textContent = movie.description;
+        document.getElementById('modalGenre').textContent = movie.genre.toUpperCase();
+        
+        // Set trailer
+        trailerFrame.src = `https://www.youtube.com/embed/${movie.trailerId}?autoplay=1&mute=1`;
+        
+        // Show modal
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeModal() {
+        const modal = document.getElementById('movieModal');
+        const trailerFrame = document.getElementById('trailerFrame');
+        
+        // Stop video
+        trailerFrame.src = '';
+        
+        // Hide modal
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
     }
 }
 
 // Initialize the app
-const taskManager = new TaskManager();
-
-// Global functions for HTML onclick handlers
-function closeEditModal() {
-    taskManager.closeEditModal();
-}
+const movieApp = new MovieApp();
