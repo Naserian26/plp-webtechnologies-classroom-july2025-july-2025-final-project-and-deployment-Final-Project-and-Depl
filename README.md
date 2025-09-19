@@ -27,7 +27,7 @@ No additional software required
 Installation
 
 Clone the repository:
-git clone <repository-url>
+git clone <https://github.com/Naserian26/plp-webtechnologies-classroom-july2025-july-2025-final-project-and-deployment-Final-Project-and-Depl>
 
 Navigate to the project folder:
 cd CineStream
@@ -59,17 +59,16 @@ README.md – Project documentation
 Live Demo
 
 The project is deployed on GitHub Pages:
-Your Live Link Here
-
+https://naserian26.github.io/plp-webtechnologies-classroom-july2025-july-2025-final-project-and-deployment-Final-Project-and-Depl/
 Deployment
 
 Hosted via GitHub Pages for easy and free online access
 
 Author
 
-Your Name
+Mercy Naserian
 
-GitHub: your-github-profile
+GitHub: Naserian26
 
 License
 
